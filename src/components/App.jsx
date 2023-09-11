@@ -27,49 +27,53 @@ export class App extends Component {
     filter: '',
   };
 
-  addContact = evt => {
-    evt.preventDefault();
+  addContact = ({ name, number }) => {
     const contacts = this.state.contacts;
-    const form = evt.currentTarget;
-    const nameValue = form.elements.name.value;
-    const numberValue = form.elements.number.value;
+    // const form = evt.currentTarget;
+
+    if (this.checkOriginalNames(contacts, name)) {
+      Notify.failure(`${name} is already in contacts list`);
+      return;
+    }
+
     const currentSubmit = {
-      name: nameValue,
-      number: numberValue,
+      name,
+      number,
       id: nanoid(),
     };
-    if (this.checkOriginalNames(contacts, nameValue)) {
-      Notify.failure(`${nameValue} is already in contacts list`);
-    } else {
-      this.setState(prevState => ({
-        contacts: [...prevState.contacts, currentSubmit],
-      }));
-    }
-    form.reset();
+
+    this.setState(prevState => ({
+      contacts: [...prevState.contacts, currentSubmit],
+    }));
   };
 
   onFilterChange = evt => {
     const filterValue = evt.currentTarget.value.toLowerCase();
-    this.setState({ filter: filterValue.trim() });
+    this.setState({ filter: filterValue });
   };
 
   checkOriginalNames = (contacts, contact) => {
-    return contacts.find(
+    return contacts.some(
       ({ name }) => name.toLowerCase() === contact.toLowerCase()
     );
   };
-  deleteContact = evt => {
-    const contacts = this.state.contacts;
-    const contactId = evt.currentTarget.id;
-    const newArr = contacts.filter(({ id }) => id !== contactId);
-    this.setState({ contacts: newArr });
+
+  deleteContact = contactId => {
+    this.setState(prevState => {
+      return {
+        contacts: prevState.contacts.filter(({ id }) => id !== contactId),
+      };
+    });
   };
-  filter = () => {
+
+  filterContacts = () => {
     const { contacts, filter } = this.state;
     return contacts.filter(({ name }) => name.toLowerCase().includes(filter));
   };
+
   render() {
     const { contacts, filter } = this.state;
+    const filteredContacts = this.filter();
     return (
       <div className={css.container}>
         <Section title="Phonebook">
@@ -80,7 +84,7 @@ export class App extends Component {
             <>
               <Filter changeFilter={this.onFilterChange} value={filter} />
               <ContactsList
-                filterContacts={this.filter}
+                contacts={filteredContacts}
                 deleteContact={this.deleteContact}
               />
             </>
