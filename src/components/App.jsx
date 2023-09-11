@@ -73,7 +73,7 @@ export class App extends Component {
 
   render() {
     const { contacts, filter } = this.state;
-    const filteredContacts = this.filter();
+    const filteredContacts = this.filterContacts();
     return (
       <div className={css.container}>
         <Section title="Phonebook">
